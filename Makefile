@@ -7,13 +7,13 @@ CXX := g++
 
 LIBS := -lach
 
-all: hand-wave
+all: main
 
-hand-wave: build/main.o
+main: build/main.o
 	gcc -o $@ $< $(LIBS)
 
 clean:
-	rm -f hand-wave
+	rm -f main
 	rm -f build/*.o
 
 build/%.o: src/%.c
