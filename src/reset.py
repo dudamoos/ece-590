@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python -OO
 
 import hubo_ach as ha
 import ach

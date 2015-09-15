@@ -5,7 +5,7 @@ CXXFLAGS := -I./include -g --std=gnu++0x
 CC := gcc
 CXX := g++
 
-LIBS := -lach
+LIBS := -lach -lm
 
 all: main
 
