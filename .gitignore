@@ -4,6 +4,8 @@
 *.lo
 *.o
 *.obj
+*.pyc
+*.pyo
 
 # Precompiled Headers
 *.gch
@@ -27,3 +29,6 @@
 *.exe
 *.out
 *.app
+
+# Text editor backups
+*~
