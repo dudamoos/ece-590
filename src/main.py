@@ -2,10 +2,80 @@
 
 import hubo_ach as ha
 import ach
-import sys
-import time
+from time import sleep
 import math
-from ctypes import *
+
+# Constants
+LEG_UPPER = 300.3
+LEG_LOWER = 300.38
+LEG_TOTAL = LEG_UPPER + LEG_LOWER
+HIP_2_MID = 88.43
+
+H_TOP = math.sqrt(LEG_TOTAL**2 - HIP_TO_MID**2)
+H_MID = H_TOP - 200
+L_H_MID = H_TOP/2 + 50
+L_AMP = H_TOP/2 - 50
+
+REF_INTERVAL = 0.05
+
+def phase_run(ref, chan_ref, state, chan_state, phase_func, phase_length):
+	[status, framesize] = chan_state.get(state, wait=False, last=True)
+	time_init = state.time
+	time_last = time_init + phase_length
+	while True:
+		# Adaptive delay (timing)
+		[status, framesize] = chan_state.get(state, wait=False, last=True)
+		time_cur = state.time
+		# Phase time (emulate do-while)
+		if (time_cur >= time_last): break
+		# Step calculations
+		phase_func(ref, time_cur - time_init)
+		chan_ref.put(ref)
+		# Adaptive delay (sleep)
+		[status, framesize] = chan_state.get(state, wait=False, last=True)
+		sleep(time_cur + REF_INTERVAL - state.time)
+	# Ensure phase reaches its final point
+	phase_func(ref, phase_length)
+	chan_ref.put(ref)
+
+# Robot eases into new support polygon over 2 seconds
+def lean_phase(ref, phase_time):
+	# IK
+	w = (HIP_TO_MID/2)*(1 - math.cos((math.pi / 2) * phase_time))
+	theta = math.asin(w / LEG_TOTAL)
+	# Ref output
+	ref.ref[ha.RHR] = ref.ref[ha.LHR] = theta
+	ref.ref[ha.RAR] = ref.ref[ha.LAR] = -theta
+
+# Robot lifts its left leg over 2 seconds
+def lift_phase(ref, phase_time):
+	# IK
+	l = L_AMP*math.cos((math.pi / 2) * phase_time) + L_H_MID
+	phi = math.acos(( LEG_UPPER**2 + LEG_LOWER**2 - l**2) / (2*LEG_UPPER*LEG_LOWER))
+	a   = math.acos(( LEG_UPPER**2 - LEG_LOWER**2 + l**2) / (2*LEG_UPPER*l))
+	b   = math.acos((-LEG_UPPER**2 + LEG_LOWER**2 + l**2) / (2*LEG_LOWER*l))
+	psi = math.pi - phi
+	# Ref output
+	ref.ref[ha.LHP] = -a
+	ref.ref[ha.LKN] = psi
+	ref.ref[ha.LAP] = -b
+
+# Robot moves up and down with a period of 4 seconds
+def hop_phase(ref, phase_time):
+	# IK
+	h = 200*math.cos((math.pi / 2) * phase_time) + H_MID
+	l = math.sqrt(h**2 + HIP_TO_MID**2)
+	theta = math.atan(HIP_TO_MID / h)
+	phi = math.acos(( LEG_UPPER**2 + LEG_LOWER**2 - l**2) / (2*LEG_UPPER*LEG_LOWER))
+	a   = math.acos(( LEG_UPPER**2 - LEG_LOWER**2 + l**2) / (2*LEG_UPPER*l))
+	b   = math.acos((-LEG_UPPER**2 + LEG_LOWER**2 + l**2) / (2*LEG_LOWER*l))
+	psi = math.pi - phi
+	# Ref output
+	ref.ref[ha.RHR] = ref.ref[ha.LHR] = theta
+	ref.ref[ha.RAR] = ref.ref[ha.LAR] = -theta
+	ref.ref[ha.RHP] = -a
+	ref.ref[ha.RKN] = psi
+	ref.ref[ha.RAP] = -b
 
 # Open Hubo-Ach feed-forward and feed-back (reference and state) channels
 chan_state = ach.Channel(ha.HUBO_CHAN_STATE_NAME)
@@ -15,25 +85,14 @@ chan_ref = ach.Channel(ha.HUBO_CHAN_REF_NAME)
 state = ha.HUBO_STATE()
 ref = ha.HUBO_REF()
 
-# Move arm into position
-ref.ref[ha.LEB] = -math.pi / 2
-ref.ref[ha.LSP] = -math.pi / 2
-ref.ref[ha.LWY] = math.pi / 2
-ref.ref[ha.LF1] = math.pi / 2
-ref.ref[ha.LF2] = math.pi / 2
-chan_ref.put(ref)
-# Allow the robot time to stabilize
-time.sleep(5)
+# Run the program
+print "Leaning ..."
+run_phase(ref, chan_ref, state, chan_state, lean_phase, 2)
+print "Lifting ..."
+run_phase(ref, chan_ref, state, chan_state, lift_phase, 2)
+print "Hopping ..."
+run_phase(ref, chan_ref, state, chan_state, hop_phase, 25)
 
-wave_rot = math.pi / 3
-while True:
-	# Display the current state
-	[statuses, framesizes] = chan_state.get(state, wait=False, last=False)
-	print "LWP:", state.joint[ha.LWP].pos
-	# Set the new state
-	ref.ref[ha.LWP] = wave_rot
-	wave_rot = -wave_rot
-	chan_ref.put(ref)
-	# Wait for the next frame
-	time.sleep(0.5)
+# Return the robot to normal
+import reset
 
