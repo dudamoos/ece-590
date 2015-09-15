@@ -5,27 +5,30 @@ import ach
 from time import sleep
 from math import pi
 
+chan_state = ach.Channel(ha.HUBO_CHAN_STATE_NAME)
+state = ha.HUBO_STATE()
+
 chan_ref = ach.Channel(ha.HUBO_CHAN_REF_NAME)
 ref = ha.HUBO_REF()
 
-print "Start reset ..."
+print "Get current state ..."
+[status, framesize] = chan_state.get(state, wait=False, last=True)
+for j in range(ha.HUBO_JOINT_COUNT): ref.ref[j] = state.joint[j].pos
 
-# Reset wrist and hand, but not shoulder yet
-ref.ref[ha.LEB] = -pi / 2
-ref.ref[ha.LSP] = -pi / 2
-ref.ref[ha.LWY] = 0
-ref.ref[ha.LF1] = 0
-ref.ref[ha.LF2] = 0
-ref.ref[ha.LWP] = 0
-chan_ref.put(ref)
-sleep(2)
-
-# Slowly lower arm
-for i in range(10):
-	ref.ref[ha.LEB] += pi / 20
-	ref.ref[ha.LSP] += pi / 20
+print "Reduce by 10% increments ..."
+for i in range(5):
+	for j in range(ha.HUBO_JOINT_COUNT): ref.ref[j] *= 0.9
 	chan_ref.put(ref)
 	sleep(1)
-	
+print "Reduce by 20% increments ..."
+for i in range(5):
+	for j in range(ha.HUBO_JOINT_COUNT): ref.ref[j] *= 0.8
+	chan_ref.put(ref)
+	sleep(1)
+print "Reduce by 50% ..."
+for j in range(ha.HUBO_JOINT_COUNT): ref.ref[j] *= 0.5
+print "Set to 0 ..."
+for j in range(ha.HUBO_JOINT_COUNT): ref.ref[j] = 0
+
 print "Reset complete ..."
 
