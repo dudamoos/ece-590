@@ -132,6 +132,7 @@ int main(int argc, char** argv) {
 	memset(&state, 0, sizeof(state));
 	
 	// Run the program
+	puts("C Code!");
 	puts("Lifting arms ...");
 	run_phase(arm_phase, 1);
 	puts("Leaning ...");

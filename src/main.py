@@ -31,9 +31,10 @@ def run_phase(ref, chan_ref, state, chan_state, phase_func, phase_length):
 		[status, framesize] = chan_state.get(state, wait=False, last=True)
 		time_cur = state.time
 		# Debug
-		debug_joint("RHP", ha.RHP, ref, state)
-		debug_joint("RKP", ha.RKN, ref, state)
-		debug_joint("RAP", ha.RAP, ref, state)
+		print "\rSim time ...",time_cur,
+		#debug_joint("RHP", ha.RHP, ref, state)
+		#debug_joint("RKP", ha.RKN, ref, state)
+		#debug_joint("RAP", ha.RAP, ref, state)
 		# Phase time (emulate do-while)
 		if (time_cur >= time_last): break
 		# Step calculations
@@ -105,14 +106,16 @@ state = ha.HUBO_STATE()
 ref = ha.HUBO_REF()
 
 # Run the program
+print "Python Code!"
 print "Lifting arms ..."
 run_phase(ref, chan_ref, state, chan_state, arm_phase, 1)
-print "Leaning ..."
+print "\nLeaning ..."
 run_phase(ref, chan_ref, state, chan_state, lean_phase, 2)
-print "Lifting foot ..."
+print "\nLifting foot ..."
 run_phase(ref, chan_ref, state, chan_state, lift_phase, 2)
-print "Hopping ..."
+print "\nHopping ..."
 run_phase(ref, chan_ref, state, chan_state, hop_phase, 25)
+print
 
 # Return the robot to normal
 import reset
