@@ -2,7 +2,7 @@
 
 import serial
 import math
-
+import time
 
 def rad2tick(r):
 	r += 150 * math.pi / 180.0
@@ -21,9 +21,8 @@ def write_register(ser, dev_id, address, value):
 	# length is byte count of instruction + payload + cksum
 	# WRITE_DATA instruction id 0x03
 	data = [dev_id, 5, 0x03, address, value_l, value_h]
-	checksum = ~reduce(lambda x,y: x+y, data) & 0xff # use other program for this
+	checksum = ~reduce(lambda x,y: x+y, data) & 0xff
 	packet = b'\xff\xff' + bytearray(data) + bytearray([checksum])
-	print map("{:02x}".format, packet)
 	ser.write(packet)
 
 def set_position(ser, dev_id, angle):
@@ -31,10 +30,16 @@ def set_position(ser, dev_id, angle):
 	write_register(ser, dev_id, 0x1e, rad2tick(angle))
 
 dynamixel = serial.Serial("/dev/ttyUSB0", baudrate=1000000)
-#dynamixel.close()
-#dynamixel.open()
+dev_id = 15 # TODO: grab from args
 
-dev_id = 15 # grab from args
-angle = -math.pi / 6 # grab from args
-set_position(dynamixel, dev_id, angle)
+try:
+	time_init = time.time()
+	while True:
+		time_cur = time.time()
+		cur_position = time_cur - time_init
+		angle = (math.pi / 2) * math.sin(math.pi * cur_position)
+		set_position(dynamixel, dev_id, angle)
+		time.sleep(time_cur + 0.05 - time.time())
+except KeyboardInterrupt:
+	dynamixel.close()
 
