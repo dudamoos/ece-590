@@ -3,6 +3,7 @@
 import serial
 import math
 import time
+import sys
 
 def rad2tick(r):
 	r += 150 * math.pi / 180.0
@@ -29,17 +30,16 @@ def set_position(ser, dev_id, angle):
 	# Goal Position is a 16-bit, little-endian number at address 0x1e
 	write_register(ser, dev_id, 0x1e, rad2tick(angle))
 
-dynamixel = serial.Serial("/dev/ttyUSB0", baudrate=1000000)
-dev_id = 15 # TODO: grab from args
+if (len(sys.argv) < 2):
+	print "Error: must specify USB to Dynamixel device"
+	sys.exit(1)
+print "Talking to dynamixels on", sys.argv[1]
+dynamixel = serial.Serial(sys.argv[1], baudrate=1000000)
 
 try:
-	time_init = time.time()
 	while True:
-		time_cur = time.time()
-		cur_position = time_cur - time_init
-		angle = (math.pi / 2) * math.sin(math.pi * cur_position)
-		set_position(dynamixel, dev_id, angle)
-		time.sleep(time_cur + 0.05 - time.time())
+		args = input()
+		set_position(dynamixel, args[0], args[1])
 except KeyboardInterrupt:
 	dynamixel.close()
 
