@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from math import pi, cos, sin, atan2, copysign
+from math import pi, cos, sin, atan2
 import numpy as np
 
 # IK functions
@@ -148,13 +148,11 @@ if __name__ == "__main__":
 	print "Goal:", goal
 
 	theta_end = ik_solve(theta_start, goal, max_err, theta_step, e_step, get_fk)
-	print "Theta end (raw):", theta_end
-	print "Pose end (raw):", get_fk(theta_end)
-	for i in range(len(theta_end)):
-		while (abs(theta_end[i]) > pi):
-			theta_end[i] -= copysign(2*pi, theta_end[i])
+	e_end_raw = get_fk(theta_end)
+	theta_end = np.mod(theta_end + pi, 2*pi) - pi
 	e_end = get_fk(theta_end)
 	print "Theta end:", theta_end
 	print "Pose end:", e_end
 	print "Remaining distance:", get_dist(e_end, goal)
 	print "Remaining error:", e_end - goal
+	print "Normalization error:", e_end_raw - e_end
