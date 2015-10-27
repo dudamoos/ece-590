@@ -45,6 +45,7 @@ ROBOT_CHAN_VIEW   = 'robot-vid-chan'
 ROBOT_TIME_CHAN  = 'robot-time'
 # CV setup 
 cv.NamedWindow("wctrl", cv.CV_WINDOW_AUTOSIZE)
+cv.NamedWindow("detect", cv.CV_WINDOW_AUTOSIZE)
 #capture = cv.CaptureFromCAM(0)
 #capture = cv2.VideoCapture(0)
 
@@ -80,8 +81,8 @@ while True:
     if status == ach.ACH_OK or status == ach.ACH_MISSED_FRAME or status == ach.ACH_STALE_FRAMES:
         vid2 = cv2.resize(vid,(nx,ny))
         img = cv2.cvtColor(vid2,cv2.COLOR_BGR2RGB)
-        cv2.imshow("wctrl", img)
-        cv2.waitKey(10)
+        #cv2.imshow("wctrl", img)
+        #cv2.waitKey(10)
     else:
         raise ach.AchException( v.result_string(status) )
 
@@ -101,11 +102,44 @@ while True:
     # ref.ref[1] = Left Wheel Velos
     # tim.sim[0] = Sim Time
     # img        = cv image in BGR format
+    
+    ref.ref[0] = 0.1 #0.5
+    ref.ref[1] = -0.1 #-0.5
+    
+    green_x = 0
+    green_y = 0
+    green_c = 0
+    marking = np.empty((ny,nx), np.uint8)
+    
+    for y in range(ny):
+        for x in range(nx):
+            [p_b, p_g, p_r] = img[y][x]
+            if ((p_g > 2*p_r) and (p_g > 2*p_b)):
+                marking[y][x] = 0x00
+                green_x += x
+                green_y += y
+                green_c += 1
+            else:
+                marking[y][x] = 0xFF
+    
+    pos_string = "offscreen"
+    if (green_c > 0):
+    	green_x /= green_c
+    	green_y /= green_c
+    	for y in range(max(green_y-2, 0), min(green_y+3, ny)):
+    	    for x in range(max(green_x-2, 0), min(green_x+3, nx)):
+    	        img[y][x] = [0x00, 0x00, 0xFF]
+    	green_x = green_x - nx/2
+    	green_y = -(green_y - ny/2)
+    	pos_string = str((green_x, green_y))
+    	
+    
+    cv2.imshow("detect", marking)
+    cv2.imshow("wctrl", img)
 
-    ref.ref[0] = -0.5
-    ref.ref[1] = 0.5
-
-    print 'Sim Time = ', tim.sim[0]
+    print 'Sim Time =', tim.sim[0], ' \tPosition =', pos_string
+    
+    cv2.waitKey(10)
     
     # Sets reference to robot
     r.put(ref);
