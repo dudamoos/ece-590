@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python -OO
 # /* -*-  indent-tabs-mode:t; tab-width: 8; c-basic-offset: 8  -*- */
 # /*
 # Copyright (c) 2014, Daniel M. Lofaro <dan (at) danLofaro (dot) com>
@@ -31,31 +31,22 @@ import ach
 import sys
 import time
 from ctypes import *
-import socket
 import cv2.cv as cv
 import cv2
 import numpy as np
 
-dd = diff_drive
-ref = dd.H_REF()
-tim = dd.H_TIME()
+ref = diff_drive.H_REF()
+tim = diff_drive.H_TIME()
 
 ROBOT_DIFF_DRIVE_CHAN   = 'robot-diff-drive'
 ROBOT_CHAN_VIEW   = 'robot-vid-chan'
 ROBOT_TIME_CHAN  = 'robot-time'
 # CV setup 
 cv.NamedWindow("wctrl", cv.CV_WINDOW_AUTOSIZE)
-cv.NamedWindow("detect", cv.CV_WINDOW_AUTOSIZE)
-#capture = cv.CaptureFromCAM(0)
-#capture = cv2.VideoCapture(0)
 
 # added
-##sock.connect((MCAST_GRP, MCAST_PORT))
-newx = 320
-newy = 240
-
-nx = 640
-ny = 480
+nx = 320
+ny = 240
 
 r = ach.Channel(ROBOT_DIFF_DRIVE_CHAN)
 r.flush()
@@ -63,8 +54,6 @@ v = ach.Channel(ROBOT_CHAN_VIEW)
 v.flush()
 t = ach.Channel(ROBOT_TIME_CHAN)
 t.flush()
-
-i=0
 
 
 print '======================================'
@@ -74,25 +63,15 @@ print '========= dan@danLofaro.com =========='
 print '======================================'
 while True:
     # Get Frame
-    img = np.zeros((newx,newy,3), np.uint8)
-    c_image = img.copy()
-    vid = cv2.resize(c_image,(newx,newy))
-    [status, framesize] = v.get(vid, wait=False, last=True)
-    if status == ach.ACH_OK or status == ach.ACH_MISSED_FRAME or status == ach.ACH_STALE_FRAMES:
-        vid2 = cv2.resize(vid,(nx,ny))
-        img = cv2.cvtColor(vid2,cv2.COLOR_BGR2RGB)
-        #cv2.imshow("wctrl", img)
-        #cv2.waitKey(10)
-    else:
+    img = np.empty((ny,nx,3), np.uint8)
+    [status, framesize] = v.get(img, wait=False, last=True)
+    if (status != ach.ACH_OK) and (status != ach.ACH_MISSED_FRAME) and (status != ach.ACH_STALE_FRAMES):
         raise ach.AchException( v.result_string(status) )
-
-
-    [status, framesize] = t.get(tim, wait=False, last=True)
-    if status == ach.ACH_OK or status == ach.ACH_MISSED_FRAME or status == ach.ACH_STALE_FRAMES:
-        pass
-        #print 'Sim Time = ', tim.sim[0]
-    else:
-        raise ach.AchException( v.result_string(status) )
+    img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    
+#    [status, framesize] = t.get(tim, wait=False, last=True)
+#    if (status != ach.ACH_OK) and (status != ach.ACH_MISSED_FRAME) and (status != ach.ACH_STALE_FRAMES):
+#        raise ach.AchException( t.result_string(status) )
 
 #-----------------------------------------------------
 #--------[ Do not edit above ]------------------------
@@ -103,24 +82,20 @@ while True:
     # tim.sim[0] = Sim Time
     # img        = cv image in BGR format
     
-    ref.ref[0] = 0.1 #0.5
-    ref.ref[1] = -0.1 #-0.5
+    ref.ref[0] = 0.5 #0.1 #0.5
+    ref.ref[1] = -0.5 #-0.1 #-0.5
     
     green_x = 0
     green_y = 0
     green_c = 0
-    marking = np.empty((ny,nx), np.uint8)
     
     for y in range(ny):
         for x in range(nx):
             [p_b, p_g, p_r] = img[y][x]
             if ((p_g > 2*p_r) and (p_g > 2*p_b)):
-                marking[y][x] = 0x00
                 green_x += x
                 green_y += y
                 green_c += 1
-            else:
-                marking[y][x] = 0xFF
     
     pos_string = "offscreen"
     if (green_c > 0):
@@ -132,13 +107,9 @@ while True:
     	green_x = green_x - nx/2
     	green_y = -(green_y - ny/2)
     	pos_string = str((green_x, green_y))
-    	
     
-    cv2.imshow("detect", marking)
-    cv2.imshow("wctrl", img)
-
     print 'Sim Time =', tim.sim[0], ' \tPosition =', pos_string
-    
+    cv2.imshow("wctrl", img)
     cv2.waitKey(10)
     
     # Sets reference to robot
