@@ -72,7 +72,8 @@ Z_TOLERANCE = 0.002
 pid_x = pid.PidController(0.0, 0.04, 1.0, 2.0/3, 0.5, 0, 6)
 # Ku = 0.4, Tu ~= 1 -> Kp = 0.08, Ki = 0.5, Kd = 1/3; integral_window = 6 points
 #pid_z = pid.PidController(5.0, 0.08, 0.5, 1.0/3, 1.0, 0, 6)
-pid_z = pid.PidController(5.0, 0.08, 1.0, 1.0/3, 0.5, 0, 6)
+#pid_z = pid.PidController(5.0, 0.08, 1.0, 1.0/3, 0.5, 0, 6)
+pid_z = pid.PController(5.0, 0.4, 1.0) # seems to be more stable with PController
 
 print '======================================'
 print '============= Robot-View ============='
@@ -121,16 +122,6 @@ while True:
     # tim.sim[0] = Sim Time
     # imgL       = cv image in BGR format (Left Camera)
     # imgR       = cv image in BGR format (Right Camera)
-    
-#    if (i % 20 < 10):
-#        ref.ref[0] = -0.5
-#        ref.ref[1] = 0.5
-#        print "Turning Right"
-#    else:
-#        ref.ref[0] = 0.5
-#        ref.ref[1] = -0.5
-#        print "Turning Left"
-#    i += 1
     #ref.ref[0] = -0.5
     #ref.ref[1] = 0.5
     
@@ -148,7 +139,7 @@ while True:
         if (abs(ctl_z - ref.ref[1]) > 0.4):
             # prevent toppling from accelerating forwards too quickly
             ctl_z = ref.ref[1] + np.copysign(0.4, ctl_z - ref.ref[1])
-            print "Adjusted C =", ctl_z
+            print "Adjusted C =", ctl_z,
     	ref.ref[0] = ref.ref[1] = ctl_z
     	if (ctl_z < 0): print "Going back",
     	else: print "Going forward",
