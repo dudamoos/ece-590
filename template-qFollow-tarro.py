@@ -72,7 +72,7 @@ Z_TOLERANCE = 0.002
 pid_x = pid.PidController(0.0, 0.04, 1.0, 2.0/3, 0.5, 0, 6)
 # Ku = 0.4, Tu ~= 1 -> Kp = 0.08, Ki = 0.5, Kd = 1/3; integral_window = 6 points
 #pid_z = pid.PidController(5.0, 0.08, 0.5, 1.0/3, 1.0, 0, 6)
-pid_z = pid.PidController(5.0, 0.08, 0.5, 1.0/3, 0.5, 0, 6)
+pid_z = pid.PidController(5.0, 0.08, 1.0, 1.0/3, 0.5, 0, 6)
 
 print '======================================'
 print '============= Robot-View ============='
@@ -145,6 +145,10 @@ while True:
         ref.ref[0] = ref.ref[1] = 0
         print "Stopping",
     elif (abs(x) <= X_TOLERANCE):
+        if (abs(ctl_z - ref.ref[1]) > 0.4):
+            # prevent toppling from accelerating forwards too quickly
+            ctl_z = ref.ref[1] + np.copysign(0.4, ctl_z - ref.ref[1])
+            print "Adjusted C =", ctl_z
     	ref.ref[0] = ref.ref[1] = ctl_z
     	if (ctl_z < 0): print "Going back",
     	else: print "Going forward",
