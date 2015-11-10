@@ -34,6 +34,7 @@ from ctypes import *
 import cv2.cv as cv
 import cv2
 import numpy as np
+import csv
 
 import distance
 import pid
@@ -74,6 +75,9 @@ pid_x = pid.PidController(0.0, 0.04, 1.0, 2.0/3, 0.5, 0, 6)
 #pid_z = pid.PidController(5.0, 0.08, 0.5, 1.0/3, 1.0, 0, 6)
 #pid_z = pid.PidController(5.0, 0.08, 1.0, 1.0/3, 0.5, 0, 6)
 pid_z = pid.PController(5.0, 0.4, 1.0) # seems to be more stable with PController
+
+plotter = csv.writer(open('output.csv', 'w'))
+plotter.writerow(['time', 'x offset', 'distance'])
 
 print '======================================'
 print '============= Robot-View ============='
@@ -127,6 +131,7 @@ while True:
     
     #x, dist = distance.get_stereo_distance(imgL, imgR)
     x, dist = distance.get_mono_distance(imgR)
+    plotter.writerow([tim.sim[0], x, dist])
     if (dist < 0.0):
     	print "Ball not on screen"
     	continue
