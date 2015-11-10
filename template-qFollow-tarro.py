@@ -69,7 +69,7 @@ i = 0
 X_TOLERANCE = 20
 # Ku = 0.2, Tu = 2 -> Kp = 0.04, Ki = 1.0, Kd = 2.0/3; integral_window = 6 points
 pid_x = pid.PidController(0.0, 0.04, 1.0, 2.0/3, 0.5, 0, 6)
-pid_z = pid.PController(5.0, 0.2, 0.5)
+pid_z = pid.PController(5.0, 0.4, 1.0)
 
 print '======================================'
 print '============= Robot-View ============='
@@ -128,8 +128,8 @@ while True:
 #        ref.ref[1] = -0.5
 #        print "Turning Left"
 #    i += 1
-    ref.ref[0] = -0.5
-    ref.ref[1] = 0.5
+    #ref.ref[0] = -0.5
+    #ref.ref[1] = 0.5
     
     #x, dist = distance.get_stereo_distance(imgL, imgR)
     x, dist = distance.get_mono_distance(imgR)
@@ -137,15 +137,17 @@ while True:
     	print "Ball not on screen"
     	continue
     ctl_x = pid_x.control(x, tim.sim[0])
-#    ctl_z = pid_z.control(dist, tim.sim[0])
-#    if (abs(x) <= X_TOLERANCE):
-#    	ref.ref[0] = ref.ref[1] = ctl_z
-#    else:
-    if (ctl_x < 0): print "Turning Right",
-    else: print "Turning Left",
+    ctl_z = pid_z.control(dist, tim.sim[0])
+    if (abs(x) <= X_TOLERANCE):
+    	ref.ref[0] = ref.ref[1] = ctl_z
+    	if (ctl_z < 0): print "Going back",
+    	else: print "Going forward",
+    else:
+        if (ctl_x < 0): print "Turning Right",
+        else: print "Turning Left",
+        ref.ref[0] = -ctl_x
+        ref.ref[1] = ctl_x
     print "Sim time = ", tim.sim[0]
-    ref.ref[0] = -ctl_x
-    ref.ref[1] = ctl_x
     
 
     # Commands Robot
