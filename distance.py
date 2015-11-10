@@ -13,8 +13,8 @@ COLOR_MAX = np.array((0x80, 0xFF, 0xFF), np.uint8)
 COLOR_MIN = np.array((0x00, 0x20, 0x20), np.uint8)
 
 def find_ball(img):
-	xs = cv2.inRange(img, COLOR_MIN, COLOR_MAX).nonzero()[0]
-	return (xs.mean(), len(xs))
+	xs = cv2.inRange(img, COLOR_MIN, COLOR_MAX).nonzero()[1]
+	return (xs.mean() - SCREEN_WIDTH / 2, len(xs))
 
 def get_stereo_distance(imgL, imgR):
 	l_x, area = find_ball(imgL)
