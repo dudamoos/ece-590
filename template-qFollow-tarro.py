@@ -67,6 +67,7 @@ t.flush()
 i = 0
 
 X_TOLERANCE = 20
+CTL_Z_TOLERANCE = 0.002
 # Ku = 0.2, Tu = 2 -> Kp = 0.04, Ki = 1.0, Kd = 2.0/3; integral_window = 6 points
 pid_x = pid.PidController(0.0, 0.04, 1.0, 2.0/3, 0.5, 0, 6)
 pid_z = pid.PController(5.0, 0.4, 1.0)
@@ -138,7 +139,10 @@ while True:
     	continue
     ctl_x = pid_x.control(x, tim.sim[0])
     ctl_z = pid_z.control(dist, tim.sim[0])
-    if (abs(x) <= X_TOLERANCE):
+    if (abs(ctl_z) <= CTL_Z_TOLERANCE):
+        ref.ref[0] = ref.ref[1] = 0
+        print "Stopping",
+    elif (abs(x) <= X_TOLERANCE):
     	ref.ref[0] = ref.ref[1] = ctl_z
     	if (ctl_z < 0): print "Going back",
     	else: print "Going forward",
@@ -152,6 +156,9 @@ while True:
 
     # Commands Robot
     r.put(ref)
+    
+    if (abs(ctl_z) <= CTL_Z_TOLERANCE): exit(0)
+    
     # Sleeps
     time.sleep(0.1)   
 #-----------------------------------------------------
