@@ -64,9 +64,12 @@ vr.flush()
 t = ach.Channel(ROBOT_TIME_CHAN)
 t.flush()
 
+i = 0
+
 X_TOLERANCE = 20
-pid_x = pid.PController(0.0, 0.2, 1.0)
-pid_z = pid.PController(5.0, 0.2, 1.0)
+# Ku = 0.2, Tu = 2 -> Kp = 0.04, Ki = 1.0, Kd = 2.0/3; integral_window = 6 points
+pid_x = pid.PidController(0.0, 0.04, 1.0, 2.0/3, 0.5, 0, 6)
+pid_z = pid.PController(5.0, 0.2, 0.5)
 
 print '======================================'
 print '============= Robot-View ============='
@@ -116,8 +119,17 @@ while True:
     # imgL       = cv image in BGR format (Left Camera)
     # imgR       = cv image in BGR format (Right Camera)
     
-    #ref.ref[0] = -0.5
-    #ref.ref[1] = 0.5
+#    if (i % 20 < 10):
+#        ref.ref[0] = -0.5
+#        ref.ref[1] = 0.5
+#        print "Turning Right"
+#    else:
+#        ref.ref[0] = 0.5
+#        ref.ref[1] = -0.5
+#        print "Turning Left"
+#    i += 1
+    ref.ref[0] = -0.5
+    ref.ref[1] = 0.5
     
     #x, dist = distance.get_stereo_distance(imgL, imgR)
     x, dist = distance.get_mono_distance(imgR)
@@ -129,8 +141,11 @@ while True:
 #    if (abs(x) <= X_TOLERANCE):
 #    	ref.ref[0] = ref.ref[1] = ctl_z
 #    else:
-    ref.ref[0] = ctl_x
-    ref.ref[1] = -ctl_x
+    if (ctl_x < 0): print "Turning Right",
+    else: print "Turning Left",
+    print "Sim time = ", tim.sim[0]
+    ref.ref[0] = -ctl_x
+    ref.ref[1] = ctl_x
     
 
     # Commands Robot
