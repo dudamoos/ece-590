@@ -14,7 +14,7 @@ class PController:
 		# output limiter
 		ctl = min(max(ctl, -self.bound), self.bound)
 		# debug
-		print "Dist = %3.4f, Ep = %3.4f, C = %3.4f" % (distance, p_error, ctl)
+		print "Dist = % 3.4f, Ep = % 3.4f, C = % 3.4f" % (distance, p_error, ctl)
 		return ctl
 
 class PidController:
@@ -49,7 +49,7 @@ class PidController:
 		self.window[0,1] = dt
 		
 		# debug
-		print("Dist = %3.4f, Ep = %3.4f, Ei = %3.4f, Ed = %3.4f, C = %3.4f"
+		print("Dist = % 3.4f, Ep = % 3.4f, Ei = % 3.4f, Ed = % 3.4f, C = % 3.4f"
 			% (distance, p_error, i_error, d_error, ctl))
 		
 		return ctl
