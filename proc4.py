@@ -32,8 +32,6 @@ while True:
 		raise ach.AchException(chan2.result_string(status))
 	
 	received_data.append([val3.time, val1.value, val2.value, val3.val])
-	if ((val3.time % 1.0) <= 0.05):
-		print "Tick!"
 	
 	if (val3.time >= 8.0 + received_data[0][0]):
 		print "Exiting!"
