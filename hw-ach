@@ -1,0 +1,41 @@
+#!/bin/sh
+
+MakeAch()
+{
+
+	ach -1 -C example-chan-1 -m 10 -n 3000 
+	ach -1 -C example-chan-2 -m 10 -n 3000 
+	ach -1 -C example-chan-3 -m 10 -n 3000 
+}
+
+KillAch()
+{
+
+	rm /dev/shm/achshm-example-chan*
+}
+
+Start()
+{
+	KillAch
+	MakeAch
+}
+
+Kill()
+{
+	KillAch
+}
+
+
+case "$1" in
+	'start' )
+		Start $2
+	;;
+
+	'kill' )
+		Kill
+	;;
+
+esac
+exit 0
+		
+
