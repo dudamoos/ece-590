@@ -40,7 +40,7 @@ while True:
 		plotter = csv.writer(open('output/output.csv', 'w'))
 		plotter.writerow(['time', 'proc1', 'proc2', 'proc3'])
 		for row in received_data:
-			row[0] -= received_data[0][0]
-			plotter.writerow(row)
+			row_data = [row[0] - received_data[0][0], row[1], row[2], row[3]]
+			plotter.writerow(row_data)
 		exit(0)
 
