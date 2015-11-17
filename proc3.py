@@ -12,8 +12,6 @@ if (len(argv) >= 2):
 else:
 	print "Using default L =", L
 
-PERIOD = 1.0 / 50.0
-
 class Proc3Data(Structure):
 	_pack_ = 1
 	_fields_ = [("val", c_double), ("time", c_double)]
@@ -36,7 +34,7 @@ while True:
 	val3.time = clock()
 	val3.val = ((1.0 / val3.val) * (L - 1.0) + val2.value) / L
 	chan3.put(val3)
-	sleep(val3.time + PERIOD - clock())
+	sleep(1.0 / 50.0)
 	
 	[status, framesize] = chan2.get(val2, wait=False, last=True)
 	if status != ach.ACH_OK and status != ach.ACH_STALE_FRAMES:

@@ -33,4 +33,9 @@ while True:
 		raise ach.AchException(chan2.result_string(status))
 	
 	plotter.writerow([val3.time, val1.value, val2.value, val3.val])
+	
+	if (val3.time >= 8.0):
+		print "Exiting!"
+		plotter.close()
+		exit(0)
 
