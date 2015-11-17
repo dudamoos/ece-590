@@ -16,8 +16,7 @@ val1 = c_double()
 val2 = c_double()
 val3 = Proc3Data()
 
-plotter = csv.writer(open('output/output.csv', 'w'))
-plotter.writerow(['time', 'proc1', 'proc2', 'proc3'])
+received_data = []
 
 while True:
 	[status, framesize] = chan3.get(val3, wait=True, last=True)
@@ -32,10 +31,16 @@ while True:
 	if status != ach.ACH_OK and status != ach.ACH_STALE_FRAMES:
 		raise ach.AchException(chan2.result_string(status))
 	
-	plotter.writerow([val3.time, val1.value, val2.value, val3.val])
+	received_data.append([val3.time, val1.value, val2.value, val3.val])
+	if ((val3.time % 1.0) <= 0.05):
+		print "Tick!"
 	
-	if (val3.time >= 8.0):
+	if (val3.time >= 8.0 + received_data[0][0]):
 		print "Exiting!"
-		plotter.close()
+		plotter = csv.writer(open('output/output.csv', 'w'))
+		plotter.writerow(['time', 'proc1', 'proc2', 'proc3'])
+		for row in received_data:
+			row[0] -= received_data[0][0]
+			plotter.writerow(row)
 		exit(0)
 

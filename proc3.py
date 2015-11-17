@@ -2,7 +2,7 @@
 
 import ach
 from ctypes import c_double, Structure
-from time import sleep, clock
+from time import sleep, time
 from sys import argv
 
 L = 5
@@ -31,7 +31,7 @@ if status != ach.ACH_OK and status != ach.ACH_STALE_FRAMES:
 	raise ach.AchException(chan2.result_string(status))
 
 while True:
-	val3.time = clock()
+	val3.time = time()
 	val3.val = ((1.0 / val3.val) * (L - 1.0) + val2.value) / L
 	chan3.put(val3)
 	sleep(1.0 / 50.0)
