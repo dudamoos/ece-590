@@ -1,0 +1,28 @@
+#!/bin/sh
+
+MakeAch()
+{
+
+	ach -1 -C ball-offset -m 10 -n 12 
+	ach -1 -C dxl-position -m 10 -n 8 
+}
+
+KillAch()
+{
+
+	rm /dev/shm/achshm-ball-offset
+	rm /dev/shm/achshm-dxl-position
+}
+
+case "$1" in
+	'start' )
+		KillAch
+		MakeAch
+	;;
+
+	'kill' )
+		KillAch
+	;;
+
+esac
+exit 0
