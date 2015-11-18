@@ -31,8 +31,8 @@ import cv2.cv as cv
 import cv2
 import numpy as np
 
-HSV_MAX = np.array((120 + 10, 150, 255), np.uint8)
-HSV_MIN = np.array((120 - 10,   0, 100), np.uint8)
+HSV_MAX = np.array((120 + 30, 255, 255), np.uint8)
+HSV_MIN = np.array((120 - 30,  50,   0), np.uint8)
 MARK_RED = cv.Scalar(0x00, 0x00, 0xFF)
 IMG_W = 320
 IMG_H = 240
