@@ -26,97 +26,43 @@
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # */
-import diff_drive
-import ach
-import sys
 import time
-from ctypes import *
 import cv2.cv as cv
 import cv2
 import numpy as np
 
-ref = diff_drive.H_REF()
-tim = diff_drive.H_TIME()
+HSV_MAX = np.array((120 + 10, 150, 255), np.uint8)
+HSV_MIN = np.array((120 - 10,   0, 100), np.uint8)
+MARK_RED = cv.Scalar(0x00, 0x00, 0xFF)
+IMG_W = 320
+IMG_H = 240
 
-ROBOT_DIFF_DRIVE_CHAN   = 'robot-diff-drive'
-ROBOT_CHAN_VIEW   = 'robot-vid-chan'
-ROBOT_TIME_CHAN  = 'robot-time'
 # CV setup 
-cv.NamedWindow("wctrl", cv.CV_WINDOW_AUTOSIZE)
+cv.NamedWindow("webcam", cv.CV_WINDOW_AUTOSIZE)
+cv.NamedWindow("detect", cv.CV_WINDOW_AUTOSIZE)
+capture = cv2.VideoCapture(0)
 
-# added
-nx = 320
-ny = 240
-
-r = ach.Channel(ROBOT_DIFF_DRIVE_CHAN)
-r.flush()
-v = ach.Channel(ROBOT_CHAN_VIEW)
-v.flush()
-t = ach.Channel(ROBOT_TIME_CHAN)
-t.flush()
-
-
-print '======================================'
-print '============= Robot-View ============='
-print '========== Daniel M. Lofaro =========='
-print '========= dan@danLofaro.com =========='
-print '======================================'
 while True:
     # Get Frame
-    img = np.empty((ny,nx,3), np.uint8)
-    [status, framesize] = v.get(img, wait=False, last=True)
-    if (status != ach.ACH_OK) and (status != ach.ACH_MISSED_FRAME) and (status != ach.ACH_STALE_FRAMES):
-        raise ach.AchException( v.result_string(status) )
-    img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+    ret, frame = capture.read()
+    frame = cv2.resize(frame, (IMG_W, IMG_H))
+    detect = cv2.cvtColor(frame, cv.CV_BGR2HSV)
+    detect = cv2.inRange(detect, HSV_MIN, HSV_MAX)
     
-#    [status, framesize] = t.get(tim, wait=False, last=True)
-#    if (status != ach.ACH_OK) and (status != ach.ACH_MISSED_FRAME) and (status != ach.ACH_STALE_FRAMES):
-#        raise ach.AchException( t.result_string(status) )
-
-#-----------------------------------------------------
-#--------[ Do not edit above ]------------------------
-#-----------------------------------------------------
-    # Def:
-    # ref.ref[0] = Right Wheel Velos
-    # ref.ref[1] = Left Wheel Velos
-    # tim.sim[0] = Sim Time
-    # img        = cv image in BGR format
+    [ys, xs] = detect.nonzero()
+    if (len(ys) > 0):
+        x = xs.mean()
+        y = ys.mean()
+        cv2.rectangle(frame, (int(x)-2, int(y)-2), (int(x)+3, int(y)+3), MARK_RED, cv.CV_FILLED)
+        x = x / (IMG_W / 2.0) - 1.0
+        y = -y / (IMG_H / 2.0) + 1.0
+        print "Offset Ratio: ", x, y
+    else:
+        print "Ball Offscreen"
     
-    ref.ref[0] = 0.5 #0.1 #0.5
-    ref.ref[1] = -0.5 #-0.1 #-0.5
-    
-    green_x = 0
-    green_y = 0
-    green_c = 0
-    
-    for y in range(ny):
-        for x in range(nx):
-            [p_b, p_g, p_r] = img[y][x]
-            if ((p_g > 2*p_r) and (p_g > 2*p_b)):
-                green_x += x
-                green_y += y
-                green_c += 1
-    
-    pos_string = "offscreen"
-    if (green_c > 0):
-    	green_x /= green_c
-    	green_y /= green_c
-    	for y in range(max(green_y-2, 0), min(green_y+3, ny)):
-    	    for x in range(max(green_x-2, 0), min(green_x+3, nx)):
-    	        img[y][x] = [0x00, 0x00, 0xFF]
-    	green_x = green_x - nx/2
-    	green_y = -(green_y - ny/2)
-    	pos_string = str((green_x, green_y))
-    
-    print 'Sim Time =', tim.sim[0], ' \tPosition =', pos_string
-    cv2.imshow("wctrl", img)
+    cv2.imshow("webcam", frame)
+    cv2.imshow("detect", detect)
     cv2.waitKey(10)
-    
-    # Sets reference to robot
-    r.put(ref);
 
     # Sleeps
-    time.sleep(0.1)   
-#-----------------------------------------------------
-#--------[ Do not edit below ]------------------------
-#-----------------------------------------------------
+    time.sleep(0.1)
