@@ -3,8 +3,8 @@
 MakeAch()
 {
 
-	ach -1 -C ball-offset -m 10 -n 12 
-	ach -1 -C dxl-position -m 10 -n 8 
+	ach -1 -C ball-offset -m 10 -n 20
+	ach -1 -C dxl-position -m 10 -n 16
 }
 
 KillAch()
