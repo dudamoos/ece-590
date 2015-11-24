@@ -5,8 +5,8 @@ import cv2.cv as cv
 import cv2
 import numpy as np
 
-import ach
 import common
+import udp
 
 HSV_MAX = np.array((120 + 30, 255, 255), np.uint8)
 HSV_MIN = np.array((120 - 30,  50,   0), np.uint8)
@@ -17,9 +17,8 @@ IMG_H = 240
 cv.NamedWindow("detect", cv.CV_WINDOW_AUTOSIZE)
 capture = cv2.VideoCapture(0)
 
-ball_chan = ach.Channel(common.CAMERA_CHANNEL)
 off = common.BallOffset()
-ball_chan.flush()
+s = udp.UdpSocket(udp.RECV_ADDR)
 
 while True:
 	# Get Frame
@@ -38,7 +37,7 @@ while True:
 		off.err[common.POS_Y] = -y / (IMG_H / 2.0) + 1.0
 	else:
 		off.onscreen = False
-	ball_chan.put(off)
+	s.send(off)
     
 	cv2.imshow("detect", frame)
 	cv2.waitKey(10)
