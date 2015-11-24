@@ -42,13 +42,14 @@ ref = common.ServoPosition()
 try:
 	while True:
 		[status, framesize] = ref_chan.get(ref, wait=True, last=True)
-		if status != ach.ACH_OK and status != ach.ACH_STALE_FRAMES and status != ach.ACH_MISSED_FRAMES:
+		if status != ach.ACH_OK and status != ach.ACH_STALE_FRAMES and status != ach.ACH_MISSED_FRAME:
 			raise ach.AchException(ref_chan.result_string())
 		
-		ref.pos[common.POS_X] = min(max(ref.pos[common.POS_X], low_angle), high_angle)
-		ref.pos[common.POS_Y] = min(max(ref.pos[common.POS_Y], low_angle), high_angle)
+		print "Got position"
+		ref.pos[common.POS_X] = min(max(-ref.pos[common.POS_X], low_angle), high_angle)
+		ref.pos[common.POS_Y] = min(max(-ref.pos[common.POS_Y], low_angle), high_angle)
 		
-		set_position(dynamixel, 1, ref.pos[common.POS_X])
+		set_position(dynamixel, 3, ref.pos[common.POS_X])
 		set_position(dynamixel, 2, ref.pos[common.POS_Y])
 except KeyboardInterrupt:
 	dynamixel.close()
