@@ -13,7 +13,7 @@ ServoPosition = common.ServoPosition()
 #-pi/4 to pi/4
 
 Kp = pi/4
-#Kd = 
+Kd = 0.01
 #Ki = 
 freq = 50.0
 period = 1/freq
@@ -26,12 +26,12 @@ pos_0 = [0.0, 0.0]
 
 def PID(err, xy):
 	theta_rp = err*Kp
-	#theta_rpd = theta_rp + Kd*(err-err_0[xy])/period
+	theta_rpd = theta_rp + Kd*(err-err_0[xy])/period
 	#err_i1 = err*period
 	#theta_rpid = theta_rpd + Ki*(err_i0[xy] + err_i1)
 	#err_i0[xy] += ei1
 	#err_0[xy] = err
-	return theta_rp#id
+	return theta_rpd#id
 
 def vel2pos(velos, xy):
 	return pos_0[xy] + velos*period
