@@ -38,7 +38,7 @@ class UdpSocket(object):
 			return None # Corrupted data
 		return data	
 
-RECV_ADDR = ('192.168.179.128', 9000)
+RECV_ADDR = ('192.168.179.132', 9000)
 #RECV_ADDR = ('localhost', 9000)
 STRUCT_FMT = '<dd?'
 EXPECTED_LENGTH = struct.calcsize(STRUCT_FMT)

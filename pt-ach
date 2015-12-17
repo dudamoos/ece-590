@@ -4,14 +4,16 @@ MakeAch()
 {
 
 	ach -1 -C ball-offset -m 10 -n 20
-	ach -1 -C dxl-position -m 10 -n 16
+	ach -1 -C pt-state -m 10 -n 16
+	ach -1 -C pt-ref -m 10 -n 16
 }
 
 KillAch()
 {
 
 	rm /dev/shm/achshm-ball-offset
-	rm /dev/shm/achshm-dxl-position
+	rm /dev/shm/achshm-pt-state
+	rm /dev/shm/achshm-pt-ref
 }
 
 case "$1" in

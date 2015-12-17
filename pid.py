@@ -8,9 +8,9 @@ from time import time, sleep
 from math import pi
 
 Input = ach.Channel(common.CAMERA_CHANNEL)
-Output = ach.Channel(common.DYNAMIXEL_CHANNEL)
+Output = ach.Channel(common.REF_CHANNEL)
 err = common.BallOffset()
-ServoPosition = common.ServoPosition()
+ServoPosition = common.PT_REF()
 
 #-pi/4 to pi/4
 

@@ -37,7 +37,7 @@ high_angle = 120.0 * (math.pi/180.0)
 low_angle = -120.0 * (math.pi/180.0)
 
 ref_chan = ach.Channel(common.DYNAMIXEL_CHANNEL)
-ref = common.ServoPosition()
+ref = common.PT_REF()
 
 try:
 	while True:
