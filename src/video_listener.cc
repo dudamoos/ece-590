@@ -59,6 +59,22 @@ void cb(ConstImageStampedPtr& msg) {
 	cv::Mat_<uchar> mask(240, 320, CV_U8);
 	cv::inRange(img, hsv_min, hsv_max, mask);
 	
+	double ave_y = 0.0, ave_x = 0.0;
+	unsigned count = 0;
+	for (int y = 0; y < 240; y++) for (int x = 0; x < 320; x++) {
+		if (mask(y, x)) {
+			count++;
+			ave_x += x;
+			ave_y += y;
+		}
+	}
+	if (count == 0) ball_offset.onscreen = false;
+	else {
+		ball_offset.onscreen = true;
+		ball_offset.err[0] = (ave_x / count) / 160.0 - 1.0;
+		ball_offset.err[1] = -(ave_y / count) / 120.0 + 1.0;
+	}
+	
 	ach_put(&chan_cam, ball_offset, sizeof(ball_offset));
 }
 
