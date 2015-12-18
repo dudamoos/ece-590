@@ -69,6 +69,13 @@ case "$1" in
 	'kill' )
 		KillAch
 	;;
+	
+	'build')
+		cd build
+		cmake ../src
+		make
+		cd ..
+	;;
 
 esac
 exit 0
