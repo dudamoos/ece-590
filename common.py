@@ -22,5 +22,6 @@ POS_Y = 1
 
 CAMERA_CHANNEL = "ball-offset"
 STATE_CHANNEL = "pt-state"
-REF_CHANNEL = "pt-ref"
+CONTROL_CHANNEL = "pt-ctl" # ref sent from PID to IK
+REF_CHANNEL = "pt-ref" # ref sent from IK to motors
 
