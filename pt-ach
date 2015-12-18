@@ -2,24 +2,66 @@
 
 MakeAch()
 {
-
+	# Make channels
 	ach -1 -C ball-offset -m 10 -n 20
 	ach -1 -C pt-state -m 10 -n 16
 	ach -1 -C pt-ref -m 10 -n 16
+	
+	# Start platform neutral process
+	./pid.py &
 }
 
 KillAch()
 {
-
+	# Stop platform neutral process
+	kill $(pidof -x pid.py) 2>/dev/null
+	
+	# Stop Physical platform processes
+	kill $(pidof -x dynamixel-position.py) 2>/dev/null
+	kill $(pidof -x udp-ach.py) 2>/dev/null
+	#echo "Shutdown udp-camera.py running on the Windows host"
+	
+	# Stop Virtual platform processes
+	kill $(pidof -x gazebo) 2>/dev/null
+	kill $(pidof -x video_listener) 2>/dev/null
+	
+	# Clean channels
 	rm /dev/shm/achshm-ball-offset
 	rm /dev/shm/achshm-pt-state
 	rm /dev/shm/achshm-pt-ref
 }
 
+StartPhysical()
+{
+	./dynamixel-position.py &
+	./udp-ach.py &
+	echo "Make sure udp-camera.py is running on the Windows host"
+}
+
+StartVirtual()
+{
+	gazebo pt-gazebo.world &
+	build/video_listener &
+}
+
+START_TARGET=StartVirtual
+
+for $arg; do
+	case "$arg" in
+		'real' | 'physical')
+			START_TARGET=StartPhysical
+		;;
+		'sim'  | 'virtual' )
+			START_TARGET=StartVirtual
+		;;
+	esac
+done
+
 case "$1" in
 	'start' )
 		KillAch
 		MakeAch
+		$START_TARGET
 	;;
 
 	'kill' )

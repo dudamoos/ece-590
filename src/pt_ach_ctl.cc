@@ -86,12 +86,9 @@ public:
 		}
 		// else report issue
 		
-		j_pan->SetMaxForce(0, 10000);
-		j_tilt->SetMaxForce(0, 10000);
-		//j_pan->SetAngle(0, dxl_ref[0]);
-		//j_tilt->SetAngle(0, dxl_ref[1]);
-		j_pan->SetVelocity(0, dxl_ref[0]);
-		j_tilt->SetVelocity(0, dxl_ref[1]);
+		// Gazebo makes joints turn the opposite direction as the physical setup
+		j_pan->SetAngle(0, -dxl_ref[0]);
+		j_tilt->SetAngle(0, -dxl_ref[1]);
 		
 		state.pos[0] = dxl_ref[0];
 		state.pos[1] = dxl_ref[1];
