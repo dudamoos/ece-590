@@ -39,24 +39,26 @@
 #include <ach.h>
 
 // For OpenCV
-#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 // ach channels
-ach_channel_t chan_cam;
+static ach_channel_t chan_cam;
 
-const cv::Vec3b hsv_max = cv::Vec3b(120 + 30, 255, 255);
-const cv::Vec3b hsv_min = cv::Vec3b(120 - 30,  50,   0);
+static const cv::Vec3b hsv_max = cv::Vec3b(120 + 30, 255, 255);
+static const cv::Vec3b hsv_min = cv::Vec3b(120 - 30,  50,   0);
 
-struct {
+static struct {
 	double err[2];
 	bool onscreen;
 } __attribute__((packed)) ball_offset = { { 0.0, 0.0 }, false };
 
 void cb(ConstImageStampedPtr& msg) {
 	// process image here
-	cv::Mat_<cv:Vec3b> img(240, 320, cv::DataType<cv::Vec3b>::type);
-	cv::cvtColor(msg->image().data, img, CV_RGB2HSV);
-	cv::Mat_<uchar> mask(240, 320, CV_U8);
+	cv::Mat_<cv::Vec3b> img(cv::Size(240, 320), cv::DataType<cv::Vec3b>::type);
+	std::string data = msg->image().data();
+	cv::cvtColor(std::vector<char>(data.begin(), data.end()), img, CV_RGB2HSV);
+	cv::Mat_<uchar> mask(cv::Size(240, 320), CV_8U);
 	cv::inRange(img, hsv_min, hsv_max, mask);
 	
 	double ave_y = 0.0, ave_x = 0.0;
@@ -75,7 +77,7 @@ void cb(ConstImageStampedPtr& msg) {
 		ball_offset.err[1] = -(ave_y / count) / 120.0 + 1.0;
 	}
 	
-	ach_put(&chan_cam, ball_offset, sizeof(ball_offset));
+	ach_put(&chan_cam, &ball_offset, sizeof(ball_offset));
 }
 
 int main(int argc, char** argv) {
@@ -87,25 +89,10 @@ int main(int argc, char** argv) {
 	
 	gazebo::transport::NodePtr node(new gazebo::transport::Node());
 	node->Init();
-	gazebo::transport::SubscriberPtr sub = node->SubScribe("/gazebo/default/pan_tilt/l_camera/camera/image", cb);
+	gazebo::transport::SubscriberPtr sub = node->Subscribe("/gazebo/default/pan_tilt/l_camera/camera/image", cb);
 	
 	for (;;) gazebo::common::Time::MSleep(100);
 	gazebo::transport::fini();
 	return 0;
 }
 
-
-int i = 0;
-/////////////////////////////////////////////////
-// Function is called everytime a message is received.
-//void cb(gazebo::msgs::Image &_msg)
-//void cb(const std::string& _msg)
-//void cb(gazebo::msgs::ImageStamped &_msg)
-//void cb(ConstWorldStatisticsPtr &_msg)
-//void cb(const std::string& _msg)
-void cbL(ConstImageStampedPtr &_msg)
-{
-  size_t size;
- ach_put(&chan_vid_chan_L, _msg->image().data().c_str() , _msg->image().data().size());
-
-}

@@ -24,12 +24,12 @@
 #include <string.h>
 
 // ach channels
+static ach_channel_t chan_ref;
+static ach_channel_t chan_state;
 
-ach_channel_t chan_ref;
-ach_channel_t chan_state;
-
-double dxl_ref[2] = { 0.0, 0.0 };
-struct {
+// data members
+static double dxl_ref[2] = { 0.0, 0.0 };
+static struct {
 	double pos[2];
 	double time;
 } __attribute__((packed)) state = { { 0.0, 0.0 }, 0.0 };
@@ -38,6 +38,7 @@ namespace gazebo {
 
 class ModelPtCtl : public ModelPlugin {
 private:
+	// gazebo pointers
 	physics::ModelPtr model;
 	physics::WorldPtr world;
 	event::ConnectionPtr updateConnection;
@@ -89,7 +90,7 @@ public:
 		state.pos[0] = dxl_ref[0];
 		state.pos[1] = dxl_ref[1];
 		state.time = world->GetSimTime().Double();
-		ach_put(&chan_state, &state, sizeof(state);
+		ach_put(&chan_state, &state, sizeof(state));
 	}
 };
 

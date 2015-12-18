@@ -110,10 +110,10 @@
         </axis>
       </joint>
       
-      <!--<plugin name="pt_ach_ctl" filename="build/libpt_ach_ctl.so">
+      <plugin name="pt_ach_ctl" filename="build/libpt_ach_ctl.so">
         <pan>j_pan</pan>
         <tilt>j_tilt</tilt>
-      </plugin>-->
+      </plugin>
     </model>
     
     <model name="sought_sphere">

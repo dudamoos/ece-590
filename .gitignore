@@ -31,3 +31,6 @@
 
 # Text editor backups
 *~
+
+# Build output
+build/*
