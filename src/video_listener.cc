@@ -55,11 +55,13 @@ static struct {
 
 void cb(ConstImageStampedPtr& msg) {
 	// process image here
-	cv::Mat_<cv::Vec3b> img(cv::Size(240, 320), cv::DataType<cv::Vec3b>::type);
+	cv::Mat3b img(240, 320, reinterpret_cast<cv::Vec3b*>(
+		const_cast<char*>(msg->image().data().c_str())));
+	cv::Mat3b hsv(240, 320);
 	std::string data = msg->image().data();
-	cv::cvtColor(std::vector<char>(data.begin(), data.end()), img, CV_RGB2HSV);
+	cv::cvtColor(img, hsv, CV_RGB2HSV);
 	cv::Mat_<uchar> mask(cv::Size(240, 320), CV_8U);
-	cv::inRange(img, hsv_min, hsv_max, mask);
+	cv::inRange(hsv, hsv_min, hsv_max, mask);
 	
 	double ave_y = 0.0, ave_x = 0.0;
 	unsigned count = 0;

@@ -80,12 +80,18 @@ public:
 	void OnUpdate() {
 		size_t fs;
 		int r = ach_get(&chan_ref, &dxl_ref, sizeof(dxl_ref), &fs, NULL, ACH_O_LAST);
-		if (r == ACH_OK || r == ACH_STALE_FRAMES || r == ACH_MISSED_FRAME)
-			assert(fs == sizeof(dxl_ref));
+		if (r == ACH_OK || r == ACH_STALE_FRAMES || r == ACH_MISSED_FRAME) {
+			//gzerr << "expected size [" << sizeof(dxl_ref) << "] - got size [" << fs << "]\n";
+			//assert(fs == sizeof(dxl_ref));
+		}
 		// else report issue
 		
-		j_pan->SetAngle(0, dxl_ref[0]);
-		j_tilt->SetAngle(0, dxl_ref[1]);
+		j_pan->SetMaxForce(0, 10000);
+		j_tilt->SetMaxForce(0, 10000);
+		//j_pan->SetAngle(0, dxl_ref[0]);
+		//j_tilt->SetAngle(0, dxl_ref[1]);
+		j_pan->SetVelocity(0, dxl_ref[0]);
+		j_tilt->SetVelocity(0, dxl_ref[1]);
 		
 		state.pos[0] = dxl_ref[0];
 		state.pos[1] = dxl_ref[1];
