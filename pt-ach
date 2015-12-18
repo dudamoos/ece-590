@@ -23,6 +23,8 @@ KillAch()
 	
 	# Stop Virtual platform processes
 	kill $(pidof -x gazebo) 2>/dev/null
+	kill $(pidof -x gzserver) 2>/dev/null
+	kill $(pidof -x gzclient) 2>/dev/null
 	kill $(pidof -x video_listener) 2>/dev/null
 	
 	# Clean channels
@@ -46,7 +48,7 @@ StartVirtual()
 
 START_TARGET=StartVirtual
 
-for $arg; do
+for arg; do
 	case "$arg" in
 		'real' | 'physical')
 			START_TARGET=StartPhysical
